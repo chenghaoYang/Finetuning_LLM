@@ -1,0 +1,77 @@
+
+##############  lora module
+
+lora:
+  with_lora: true 
+  lora_type: lora
+  r: 8
+  lora_alpha: 32
+  lora_dropout: 0.1
+  fan_in_fan_out: false
+  # Bias type for Lora. Can be 'none', 'all' or 'lora_only'"
+  bias: none
+  # "help": "List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. "
+  modules_to_save: null
+  layers_to_transform: null
+  layers_pattern: "q_proj|k_proj|v_proj|o_proj"
+
+  # "The mapping from layer names or regexp expression to ranks which are different from the default rank specified by `r`. "
+  # "For example, `{model.decoder.layers.0.encoder_attn.k_proj: 8`}"
+  rank_pattern: {}
+
+  # "The mapping from layer names or regexp expression to alphas which are different from the default alpha specified by `lora_alpha`. "
+  # "For example, `{model.decoder.layers.0.encoder_attn.k_proj: 32`}"
+
+  alpha_pattern: {}
+adalora:
+  with_lora: false 
+  lora_type: adalora
+  r: 8
+  lora_alpha: 32
+  lora_dropout: 0.1
+  fan_in_fan_out: false
+  # Bias type for Lora. Can be 'none', 'all' or 'lora_only'"
+  bias: none
+  # "help": "List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. "
+  modules_to_save: null
+  layers_to_transform: null
+  layers_pattern: "q_proj|k_proj|v_proj|o_proj"
+  alpha_pattern: {}
+
+  # Target Lora matrix dimension.
+  target_r: 8
+  #Intial Lora matrix dimension.
+  init_r: 12
+  #The steps of initial warmup.
+  tinit: 0
+  #The steps of final warmup
+  tfinal: 8750
+  #Step interval of rank allocation.
+  deltaT: 1
+  #Hyperparameter of EMA.
+  beta1: 0.85
+  #Hyperparameter of EMA.
+  beta2: 0.85
+  #The orthogonal regularization coefficient.
+  orth_reg_weight: 0.5
+
+  #The total training steps.
+  total_step: 8750
+
+   #The saved rank pattern.
+  rank_pattern: null
+
+ia3:
+  with_lora: false 
+  fan_in_fan_out: false
+  # "help": "List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. "
+  modules_to_save: null
+  init_ia3_weights: true
+
+##############  
+prompt:
+  with_prompt: true
+  prompt_type: prefix_tuning
+  task_type: causal_lm
+  prefix_projection: false
+  num_virtual_tokens: 32

@@ -1,0 +1,45 @@
+global_args:
+  trainer_backend: pl
+  enable_deepspeed: true
+  enable_ptv2: false
+  enable_lora: true
+  load_in_bit: 0
+  config_merge: {}
+  # model weights, corresponding to config.constant_map.py
+  model_name: Qwen2.5-7B
+
+  # one of auto 16 bf16 32
+  precision: auto
+  quantization_config:
+    load_in_8bit: false
+    load_in_4bit: true
+    llm_int8_threshold: 6.0
+    llm_int8_has_fp16_weight: false
+    bnb_4bit_compute_dtype: float16  # one of float16  bfloat16 float32
+    bnb_4bit_use_double_quant: true
+    bnb_4bit_quant_type: nf4
+
+
+
+global_models_mapper:
+
+    Qwen2.5-1.5B:
+        model_type: qwen
+        model_name_or_path: /scratch/cy2668/adalora_qwen/Qwen2.5-1.5B-Instruct
+        config_name: /scratch/cy2668/adalora_qwen/Qwen2.5-1.5B-Instruct
+        tokenizer_name: /scratch/cy2668/adalora_qwen/Qwen2.5-1.5B-Instruct
+        
+    Qwen2.5-deepseek-7B:
+        model_type: qwen
+        model_name_or_path: /scratch/cy2668/adalora_qwen/DeepSeek-R1-Distill-Qwen-7B
+        config_name: /scratch/cy2668/adalora_qwen/DeepSeek-R1-Distill-Qwen-7B
+        tokenizer_name: /scratch/cy2668/adalora_qwen/DeepSeek-R1-Distill-Qwen-7B
+        
+    Qwen2.5-7B:
+        model_type: qwen
+        model_name_or_path: /scratch/cy2668/adalora_qwen/Qwen2.5-7B
+        config_name: /scratch/cy2668/adalora_qwen/Qwen2.5-7B
+        tokenizer_name: /scratch/cy2668/adalora_qwen/Qwen2.5-7B
+        
+    
+
