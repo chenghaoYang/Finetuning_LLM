@@ -1,3 +1,72 @@
+## Description
+Our project,Adaptive and Quantized Fine‑Tuning for Large‑Language Models: A Unified Optimization Framework, explores how to efficiently fine‑tune state‑of‑the‑art LLMs under strict GPU‑memory constraints. By combining parameter‑efficient methods (LoRA and AdaLoRA) with low‑bit quantization (4‑bit and 8‑bit) and integrating Flash‑Attention via DeepSpeed, we enable scalable training of Qwen‑2.5‑1.5B and Qwen‑2.5‑7B models on a single NVIDIA A100. Evaluated on the Alpaca dataset, the 7B LoRA model equipped with Flash‑Attention achieved the best balance of semantic quality (ROUGE‑L 35.69, BERT‑F1 38.51) and latency, while quantization offers a viable path for memory‑constrained, high‑throughput deployments. Overall, Flash‑Attention delivers 40–60% wall‑clock speed‑ups (at the cost of higher CPU utilization), LoRA provides a lightweight tuning baseline, AdaLoRA adds adaptive capacity with modest slowdowns, and quantization yields marginal speed gains with some quality trade‑offs.
+
+## Project Milestones and Completion Status
+
+Scalable Training Backbone
+– Goal: Enable data‑parallel training and replace vanilla attention kernels with FlashAttention.
+– Status: Completed. DeepSpeed data‑parallel training is in place, FlashAttention has been fully integrated into our fork, yielding a ~1.8× increase in tokens/sec on a single A100.
+
+Adaptive Parameter‑Efficient Tuning
+– Goal: Apply AdaLoRA to the q/k/v/o projections of Qwen‑2.5‑1.5B and Qwen‑2.5‑7B (and support QLoRA).
+– Status: Completed. Both models now support AdaLoRA and QLoRA; with 90% of Alpaca as training data, the 7B AdaLoRA model reached a training loss of ~0.014 and the 1.5B model ~0.016 (compared to 0.098 and 0.13 for 16‑bit LoRA).
+
+4‑bit and 8‑bit Quantization
+– Goal: Quantize remaining full‑precision weights to 4‑bit via QLoRA (and, time permitting, prune low‑magnitude channels for 8‑bit).
+– Status: 4‑bit QLoRA – Completed. All weights successfully quantized to 4‑bit.
+8‑bit pruning – In Progress. Magnitude‑based channel pruning is under experimentation.
+
+Profiling and Evaluation
+– Goal: Track every run with torch.profiler and assess trained models using BLEU, ROUGE‑L, and BERT‑F1.
+– Status: Completed. Full profiling pipeline is operational, with performance metrics collected and analyzed across all tuning and quantization configurations.
+
+
+## Code structure 
+Root directory
+
+README.MD – Project overview, installation steps, dataset/inference/training instructions 
+GitHub
+
+args.MD – Detailed descriptions of all training hyperparameters and their meanings 
+GitHub
+
+requirements.txt – Python dependencies (PyTorch, DeepSpeed, flash‑attention, etc.) 
+GitHub
+
+train.py – Main entry point for fine‑tuning models (handles config loading, model/optimizer setup, and launch) 
+GitHub
+
+data_processer.py – Defines data loading and preprocessing pipeline for Alpaca and other datasets 
+GitHub
+
+data_tools.py – Helper functions for dataset manipulation (e.g. batching, tokenization utilities) 
+GitHub
+
+data_utils.py – General-purpose utilities (file I/O, sampling, mixed‑precision wrappers) 
+GitHub
+
+config/
+Contains YAML/JSON files specifying model hyperparameters (LoRA ranks, learning rates, quantization bits, FlashAttention) and DeepSpeed settings 
+GitHub
+
+data/
+Placeholder or scripts for fetching/preprocessing datasets (e.g. splits of the Alpaca dataset) 
+GitHub
+
+infer/
+Inference scripts, notably infer_lora_finetuning.py, to run LoRA/AdaLoRA‐quantized checkpoints on new inputs 
+GitHub
+
+scripts/
+Shell wrappers to launch training with different modes:
+
+train_full.sh – full‑parameter training
+
+train_lora.sh – LoRA/AdaLoRA‑only fine‑tuning 
+GitHub
+
+training/
+Supplementary files and logs for tracking runs, including any parameter sweeps or profiler outputs
 
 ## install
   - pip install -U -r requirements.txt
@@ -13,7 +82,8 @@ pip install csrc/rotary
 
 
 ## weight
- - [Qwen2.5-7B&&Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B&&https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct)
+ - [Qwen2.5-7B](https://huggingface.co/Qwen/Qwen2.5-7B)
+  - [ &&Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct)
 
 
 ## dataset
@@ -45,11 +115,25 @@ pip install csrc/rotary
 ```
 
 
-
-
-
 ## training parameter
 [training parameter](args.MD)
+
+
+## Observations & Conclusions
+
+FlashAttention delivers the largest latency gains, cutting wall‑clock time by roughly 40–60%, at the expense of pushing utilization further onto the CPU 
+
+.
+
+LoRA is more lightweight than AdaLoRA, running ~10–12% faster on both CPU (~62 k vs 71 k ms) and GPU (~280 vs 460 ms) durations 
+
+.
+
+Quantization incurs a ~1–1.5‑point drop in quality metrics, making it less attractive unless memory footprint is the overriding constraint 
+
+.
+
+Best trade‑off: The 7B LoRA model with FlashAttention achieves top semantic quality (ROUGE‑L 35.69, BERT‑F1 38.51) while maintaining sub‑second latency on a single A100.
 
 ## Reference
 https://github.com/ssbuild/qwen_finetuning
