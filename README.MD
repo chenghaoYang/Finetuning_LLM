@@ -120,20 +120,38 @@ pip install csrc/rotary
 
 
 ## Observations & Conclusions
+![Generation Quality](Generation_Quality.png)
+![Metrics](Score.png)
+	Quality Metrics
+	We achieved ROUGE‑L of 35.69 and BERT‑F1 of 38.51 using the 7 billion‑parameter model with LoRA and FlashAttention, demonstrating superior semantic fidelity.
 
-FlashAttention delivers the largest latency gains, cutting wall‑clock time by roughly 40–60%, at the expense of pushing utilization further onto the CPU 
+	The highest BLEU score of 13.93 was obtained by the same 7 billion‑parameter LoRA model without FlashAttention, indicating that raw n‑gram overlap peaks in that configuration.
 
-.
+  Semantic scores (ROUGE‑L, BERT‑F1) actually improve with FlashAttention on the 7 B LoRA model, while BLEU drops by only 0.1‑0.2 points.
 
-LoRA is more lightweight than AdaLoRA, running ~10–12% faster on both CPU (~62 k vs 71 k ms) and GPU (~280 vs 460 ms) durations 
+The 7 B LoRA configuration with FlashAttention is our recommended setup for applications demanding both high semantic fidelity and low latency. Quantized variants remain a strong option for extremely memory‑constrained or throughput‑focused deployment scenarios.”
 
-.
 
-Quantization incurs a ~1–1.5‑point drop in quality metrics, making it less attractive unless memory footprint is the overriding constraint 
+![Profile Time](Profile.png)
+![Total Dration](Total_Duration.png)
+![GPU Duration](GPU_Duration.png)
+![Wall Time](Wall_Time.png)
 
-.
+Latency (6‑step Wall‑Clock)
+	Enabling FlashAttention reduces end‑to‑end wall‑time by 40–60% across all configurations. For example, the 7 B AdaLoRA run drops from roughly 2.43 s to 1.45 s.
 
-Best trade‑off: The 7B LoRA model with FlashAttention achieves top semantic quality (ROUGE‑L 35.69, BERT‑F1 38.51) while maintaining sub‑second latency on a single A100.
+	Even the smaller 1.5 B variants see similar proportional speed‑ups (from ~1.32 s down to ~0.99 s).
+Resource Utilization
+	CPU remains the dominant resource, consuming over 99% of profiled time in every test.
+
+	GPU share falls from around 2.3–3.4% without FlashAttention to just 0.4–0.7% when FlashAttention is active, indicating that most work is still orchestrated on the host side.
+
+
+Conclusion:
+	1.	FlashAttention delivers consistent, large speed‑ups (40–60%) across model sizes and adaptation methods, making it an effective way to reduce latency on a single A100 GPU.
+	2.	Quality trade‑offs are minimal: Semantic scores (ROUGE‑L, BERT‑F1) actually improve with FlashAttention on the 7 B LoRA model, while BLEU drops by only 0.1‑0.2 points.
+	3.	Quantization (4‑bit/8‑bit) further cuts memory and execution time but incurs a larger quality penalty (~1–1.5 points), suggesting a use case when hardware constraints outweigh marginal metric losses.
+The 7 B LoRA configuration with FlashAttention is our recommended setup for applications demanding both high semantic fidelity and low latency. Quantized variants remain a strong option for extremely memory‑constrained or throughput‑focused deployment scenarios.
 
 ## Reference
 https://github.com/ssbuild/qwen_finetuning
